@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validador de Tareas — Prototipo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Validador de Tareas</h1>
+      <p class="subtitle">
+        Sube la rúbrica, la solución de referencia y las tareas de los estudiantes.
+        El sistema las califica de 1 a 10 y genera un Excel ordenado por apellido.
+      </p>
+    </header>
+
+    <section class="upload-grid">
+      <div class="upload-card">
+        <label for="rubricFile">1. Rúbrica de evaluación <span class="required">*</span></label>
+        <input type="file" id="rubricFile" accept=".txt,.docx,.pdf" />
+      </div>
+
+      <div class="upload-card">
+        <label for="solutionFile">2. Solución de referencia <span class="optional">(opcional)</span></label>
+        <input type="file" id="solutionFile" accept=".txt,.docx,.pdf" />
+      </div>
+
+      <div class="upload-card">
+        <label for="studentFiles">3. Tareas de los estudiantes <span class="required">*</span></label>
+        <input type="file" id="studentFiles" accept=".txt,.docx,.pdf" multiple />
+        <p id="fileCount" class="file-count"></p>
+      </div>
+    </section>
+
+    <button id="processBtn">Calificar y generar Excel</button>
+
+    <div id="status" class="status hidden"></div>
+
+    <section id="resultsSection" class="results hidden">
+      <div class="results-header">
+        <h2>Resultados</h2>
+        <a id="downloadLink" class="download-btn" href="#" download>⬇ Descargar Excel</a>
+      </div>
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Apellido</th>
+            <th>Nombre completo</th>
+            <th>Nota</th>
+            <th>Justificación</th>
+            <th>Archivo</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

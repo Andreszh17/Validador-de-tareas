@@ -44,13 +44,15 @@ pip install -r requirements.txt
 3. Sube **uno o varios archivos** con las tareas de los estudiantes. El
    sistema intenta identificar el nombre de cada estudiante a partir del
    contenido del archivo (y usa el nombre del archivo como respaldo).
-4. Presiona **Calificar**. Verás el avance real: primero se leen los
-   escaneos y fotos ("Leyendo escaneo 3 de 8"), luego se califica cada tarea
+4. Elige la forma de calificar (ver abajo) y presiona **Calificar**. Verás el
+   avance real: primero se leen los escaneos y fotos ("Leyendo escaneo 3 de 8"),
+   luego se divide la rúbrica en criterios y se califica cada tarea
    ("Calificando tarea 5 de 30"). El proceso corre en el servidor: si recargas
    la página, el avance se recupera. Al terminar:
    - Verás una tabla de resultados en pantalla.
    - Podrás descargar un Excel (`calificaciones_FECHA.xlsx`) con las columnas
-     Apellido, Nombre completo, Nota (1-10), Justificación, Revisar y Archivo,
+     Apellido, Nombre completo, Nota (1-10), un puntaje por criterio (si
+     calificaste por criterios), Justificación, Revisar y Archivo,
      ordenado alfabéticamente por apellido (sin importar tildes, la ñ va después
      de la n y los estudiantes sin nombre quedan al final).
    - Las filas que necesitan tu atención salen en **amarillo**, con el motivo en
@@ -62,6 +64,53 @@ pip install -r requirements.txt
      se ve en pantalla con "Ver texto leído de la imagen").
 5. Los Excel generados también quedan guardados en la carpeta
    `validador-tareas/outputs/`.
+
+## Formas de calificar
+
+Antes de calificar eliges una de tres formas (selector "Forma de calificar"):
+
+| Forma | Cómo funciona |
+| --- | --- |
+| **Por criterios** (recomendada) | Un *orquestador* divide la rúbrica en criterios una sola vez por grupo. Luego un *evaluador* califica cada criterio por separado, con una cita textual de la tarea, y el *verificador* (código, no IA) comprueba que la cita exista, que el puntaje no pase del máximo y que la suma cuadre. Si algo no cuadra, se le pide al evaluador que lo corrija una vez. |
+| Por criterios, sin verificador | Igual, sin la verificación. Sirve para medir cuánto aporta el verificador. |
+| Un solo evaluador | Un modelo califica toda la rúbrica de una vez (la versión anterior). Más rápido. |
+
+Con la forma por criterios:
+
+- La nota es la suma de los criterios sobre el total de la rúbrica, llevada a 1-10.
+- El Excel trae una columna por criterio y una hoja **Rúbrica interpretada** con
+  cómo el orquestador dividió la rúbrica; revísala la primera vez que uses una
+  rúbrica nueva. En pantalla se ve con "Ver cómo se dividió la rúbrica".
+- Si el orquestador no logra dividir la rúbrica, el grupo se califica con un solo
+  evaluador y se avisa arriba de los resultados.
+- Cuando el nombre del estudiante no está etiquetado en el documento, un agente
+  pequeño (*identificador*) lo busca.
+- Hace más llamadas al modelo que la forma de un solo evaluador (una por criterio,
+  más los reintentos), así que tarda más. Para que Ollama atienda dos criterios a
+  la vez, define la variable de entorno `OLLAMA_NUM_PARALLEL=2` antes de abrir
+  Ollama.
+
+En `app.py` puedes cambiar la forma por defecto (`MODO_POR_DEFECTO`), cuántos
+criterios se califican a la vez (`EVALUADORES_SIMULTANEOS`) y el modelo de cada
+rol (`MODELOS`), por ejemplo un modelo más grande para el orquestador.
+
+## Medir contra tus notas
+
+Para saber qué forma de calificar se parece más a tu criterio:
+
+1. Toma 20 a 30 tareas que ya calificaste a mano y anota tus notas en un CSV con
+   las columnas `archivo` y `nota` (el nombre del archivo tal como lo subes).
+2. Califica ese mismo grupo con cada forma. Cada corrida genera su Excel en
+   `outputs/`.
+3. Compara:
+   ```
+   python medir_contra_docente.py mis_notas.csv outputs/calificaciones_A.xlsx outputs/calificaciones_C.xlsx
+   ```
+
+El informe da, por corrida, el error promedio frente a tus notas, el porcentaje de
+tareas a 0,5 y a 1 punto o menos, el sesgo (si el sistema califica más alto o más
+bajo que tú) y las tareas con más diferencia. Si pasas dos corridas de la misma
+forma, también ves cuánto cambia la nota entre corridas.
 
 ## Notas importantes del prototipo
 

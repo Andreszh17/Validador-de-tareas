@@ -248,6 +248,7 @@ function render() {
 
 const FASES = {
   preparando: "Preparando…",
+  rubrica: "Dividiendo la rúbrica en criterios",
   ocr: "Leyendo escaneos y fotos",
   calificando: "Calificando tareas",
   excel: "Generando el Excel",
@@ -313,10 +314,17 @@ function showResults(payload) {
   state.sort = null;
   $("#searchInput").value = "";
   $("#downloadLink").href = payload.excel_url;
-  banner.hidden = !payload.ollama_caido;
-  banner.textContent = payload.ollama_caido
-    ? "Se perdió la conexión con Ollama a mitad del grupo. Las tareas que quedaron sin calificar están marcadas; vuelve a enviarlas cuando Ollama esté disponible."
-    : "";
+  const avisos = [];
+  if (payload.ollama_caido) {
+    avisos.push("Se perdió la conexión con Ollama a mitad del grupo. Las tareas que quedaron sin calificar están marcadas; vuelve a enviarlas cuando Ollama esté disponible.");
+  }
+  if (payload.aviso) avisos.push(payload.aviso);
+  banner.hidden = avisos.length === 0;
+  banner.textContent = avisos.join(" ");
+  banner.classList.toggle("is-info", !payload.ollama_caido);
+  state.mode = payload.modo || "unico";
+  state.rubric_struct = payload.rubrica || null;
+  renderRubricUsed();
   renderResults();
   resultsSection.hidden = false;
   resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -367,6 +375,7 @@ form.addEventListener("submit", async (e) => {
   data.append("rubric", state.rubric);
   if (state.solution) data.append("solution", state.solution);
   state.students.forEach((f) => data.append("students", f));
+  data.append("modo", selectedMode());
 
   showMessage("");
   resultsSection.hidden = true;
@@ -426,8 +435,11 @@ function renderOverview() {
   const review = all.filter(needsReview);
   const avg = graded.length ? graded.reduce((s, r) => s + r.nota, 0) / graded.length : null;
 
+  const how = state.rubric_struct
+    ? ` por criterios (${state.rubric_struct.criterios.length} criterios, ${formatPoints(state.rubric_struct.total)} puntos)`
+    : " con un solo evaluador";
   $("#resultsSummary").textContent =
-    `${all.length} ${all.length === 1 ? "tarea procesada" : "tareas procesadas"}, ordenadas por apellido.`;
+    `${all.length} ${all.length === 1 ? "tarea procesada" : "tareas procesadas"}${how}, ordenadas por apellido.`;
   $("#figGraded").textContent = `${graded.length} de ${all.length}`;
   $("#figAverage").textContent = avg === null ? "—" : formatGrade(avg);
   const figReview = $("#figReview");
@@ -500,6 +512,7 @@ function renderRows() {
           </td>
           <td class="col-grade">${grade}</td>
           <td class="col-why">
+            ${criteriaHtml(r)}
             <div class="why" id="why-${i}">
               <p class="why-text">${why || '<span class="review-ok">Sin justificación.</span>'}</p>
               <button type="button" class="why-toggle" aria-expanded="false" aria-controls="why-${i}" hidden>Ver completa</button>
@@ -567,6 +580,54 @@ document.querySelectorAll(".sort").forEach((btn) =>
     renderRows();
   })
 );
+
+
+// ---------- Forma de calificar ----------
+
+const MODE_HINTS = {
+  criterios: "Un evaluador por cada criterio de la rúbrica, y el programa verifica citas y puntajes antes de sumar. Más preciso; tarda más.",
+  criterios_sin_verificador: "Para comparar: un evaluador por criterio, sin verificar citas ni puntajes.",
+  unico: "Un solo modelo califica toda la rúbrica de una vez. Más rápido.",
+};
+
+function selectedMode() {
+  const checked = document.querySelector('input[name="modo"]:checked');
+  return checked ? checked.value : "criterios";
+}
+
+function renderModeHint() {
+  $("#modeHint").textContent = MODE_HINTS[selectedMode()] || "";
+}
+
+document.querySelectorAll('input[name="modo"]').forEach((el) => el.addEventListener("change", renderModeHint));
+renderModeHint();
+
+function formatPoints(n) {
+  return Number(n).toLocaleString("es-CO", { maximumFractionDigits: 2 });
+}
+
+function criteriaHtml(r) {
+  if (!Array.isArray(r.criterios) || !r.criterios.length) return "";
+  const items = r.criterios
+    .map((c) => {
+      const score = typeof c.puntaje === "number" ? formatPoints(c.puntaje) : "—";
+      const low = typeof c.puntaje === "number" && c.puntaje < c.puntos_max * 0.6;
+      return `<li title="${escapeHtml(c.razon || "")}"><span class="crit-name">${escapeHtml(c.nombre)}</span><span class="crit-score${low ? " low" : ""}">${score}/${formatPoints(c.puntos_max)}</span></li>`;
+    })
+    .join("");
+  return `<ul class="crit-list">${items}</ul>`;
+}
+
+function renderRubricUsed() {
+  const box = $("#rubricUsed");
+  const rub = state.rubric_struct;
+  box.hidden = !rub;
+  if (!rub) return;
+  $("#rubricBody").innerHTML =
+    rub.criterios
+      .map((c) => `<tr><td>${escapeHtml(c.nombre)}</td><td class="num">${formatPoints(c.puntos_max)}</td><td>${escapeHtml(c.descripcion)}</td></tr>`)
+      .join("") + `<tr class="total"><td>Total</td><td class="num">${formatPoints(rub.total)}</td><td>La nota es el total obtenido sobre ${formatPoints(rub.total)}, llevado a la escala de 1 a 10.</td></tr>`;
+}
 
 render();
 checkEngine();

@@ -88,6 +88,16 @@
 
       <p id="formMessage" class="form-message" role="alert" hidden></p>
 
+      <section class="mode-row" aria-labelledby="modeLabel">
+        <span id="modeLabel" class="mode-label">Forma de calificar</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="modeLabel">
+          <label><input type="radio" name="modo" value="criterios" checked /><span>Por criterios</span></label>
+          <label><input type="radio" name="modo" value="criterios_sin_verificador" /><span>Por criterios, sin verificador</span></label>
+          <label><input type="radio" name="modo" value="unico" /><span>Un solo evaluador</span></label>
+        </div>
+        <p id="modeHint" class="mode-hint"></p>
+      </section>
+
       <div class="actions">
         <button type="submit" id="processBtn" class="btn btn-primary">Calificar tareas</button>
         <p id="actionHint" class="action-hint">Falta la rúbrica y al menos una tarea.</p>
@@ -123,6 +133,14 @@
       </div>
 
       <div id="banner" class="banner" hidden></div>
+
+      <details id="rubricUsed" class="rubric-used" hidden>
+        <summary>Ver cómo se dividió la rúbrica</summary>
+        <table>
+          <thead><tr><th scope="col">Criterio</th><th scope="col">Puntos</th><th scope="col">Qué se exige</th></tr></thead>
+          <tbody id="rubricBody"></tbody>
+        </table>
+      </details>
 
       <div class="overview">
         <dl class="figures">

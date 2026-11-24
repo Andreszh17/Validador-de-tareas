@@ -395,6 +395,61 @@ button, input { font: inherit; color: inherit; }
   font-size: 14px;
 }
 
+/* ---------- Forma de calificar ---------- */
+
+.mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.mode-label { font-size: 14px; font-weight: 600; }
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  padding: 3px;
+  border-radius: var(--r-sm);
+  background: #eceeeb;
+}
+
+.segmented label { position: relative; cursor: pointer; }
+
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.segmented span {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+
+.segmented input:checked + span {
+  background: var(--sheet);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(27, 36, 48, 0.12);
+}
+
+.segmented input:focus-visible + span { box-shadow: var(--focus); }
+
+.form-busy .segmented { opacity: 0.55; pointer-events: none; }
+
+.mode-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
 /* ---------- Botones ---------- */
 
 .actions {
@@ -783,6 +838,72 @@ button, input { font: inherit; color: inherit; }
   line-height: 1.55;
   white-space: pre-wrap;
 }
+
+.crit-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.crit-list li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--paper);
+  font-size: 12.5px;
+  cursor: help;
+}
+
+.crit-name { color: var(--ink-soft); }
+
+.crit-score {
+  font-family: var(--font-grade);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.crit-score.low { color: var(--pen); }
+
+.banner.is-info { background: var(--marker-soft); color: #6b4e00; }
+
+.rubric-used {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.rubric-used summary {
+  color: var(--board);
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.rubric-used table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+}
+
+.rubric-used th,
+.rubric-used td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+  font-size: 13.5px;
+}
+
+.rubric-used th { font-size: 12.5px; color: var(--ink-soft); background: #fafbfa; }
+.rubric-used td.num { font-family: var(--font-grade); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rubric-used tr.total td { font-weight: 600; border-bottom: 0; }
 
 /* Resaltador: lo que hay que revisar */
 .review-list {

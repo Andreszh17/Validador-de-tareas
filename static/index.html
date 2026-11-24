@@ -3,60 +3,168 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Validador de Tareas — Prototipo</title>
+  <title>Validador de Tareas</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232F6B57'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Validador de Tareas</h1>
-      <p class="subtitle">
-        Sube la rúbrica, la solución de referencia y las tareas de los estudiantes.
-        El sistema las califica de 1 a 10 y genera un Excel ordenado por apellido.
-      </p>
-    </header>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Zm0 0v5h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95M19 5v4h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
 
-    <section class="upload-grid">
-      <div class="upload-card">
-        <label for="rubricFile">1. Rúbrica de evaluación <span class="required">*</span></label>
-        <input type="file" id="rubricFile" accept=".txt,.docx,.pdf" />
-      </div>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"></span>
+        Validador de Tareas
+      </a>
+      <button id="engineStatus" class="engine" type="button" data-state="checking" title="Volver a comprobar">
+        <span class="engine-dot" aria-hidden="true"></span>
+        <span id="engineText">Comprobando Ollama…</span>
+      </button>
+    </div>
+  </header>
 
-      <div class="upload-card">
-        <label for="solutionFile">2. Solución de referencia <span class="optional">(opcional)</span></label>
-        <input type="file" id="solutionFile" accept=".txt,.docx,.pdf" />
-      </div>
-
-      <div class="upload-card">
-        <label for="studentFiles">3. Tareas de los estudiantes <span class="required">*</span></label>
-        <input type="file" id="studentFiles" accept=".txt,.docx,.pdf" multiple />
-        <p id="fileCount" class="file-count"></p>
-      </div>
+  <main class="page">
+    <section class="intro">
+      <h1>Calificar un grupo de tareas</h1>
     </section>
 
-    <button id="processBtn">Calificar y generar Excel</button>
+    <form id="gradeForm" class="steps" novalidate>
+      <div class="step-row">
+        <section class="step" aria-labelledby="step1">
+          <h2 id="step1" class="step-title"><span class="step-num">1</span>Rúbrica</h2>
+          <p class="step-hint">Criterios y puntajes con los que se califica.</p>
+          <label class="drop single" data-slot="rubric">
+            <input type="file" accept=".txt,.docx,.pdf,.jpg,.jpeg,.png" class="sr-only" />
+            <span class="drop-empty">
+              <svg class="drop-icon"><use href="#i-upload" /></svg>
+              <span><strong>Elige un archivo</strong> o arrástralo aquí</span>
+              <span class="drop-types">.docx, .pdf, .txt o foto (.jpg, .png)</span>
+            </span>
+            <span class="drop-filled"></span>
+          </label>
+        </section>
 
-    <div id="status" class="status hidden"></div>
-
-    <section id="resultsSection" class="results hidden">
-      <div class="results-header">
-        <h2>Resultados</h2>
-        <a id="downloadLink" class="download-btn" href="#" download>⬇ Descargar Excel</a>
+        <section class="step" aria-labelledby="step2">
+          <h2 id="step2" class="step-title"><span class="step-num">2</span>Solución de referencia <span class="step-optional">opcional</span></h2>
+          <p class="step-hint">Ayuda al modelo a verificar las respuestas correctas.</p>
+          <label class="drop single" data-slot="solution">
+            <input type="file" accept=".txt,.docx,.pdf,.jpg,.jpeg,.png" class="sr-only" />
+            <span class="drop-empty">
+              <svg class="drop-icon"><use href="#i-upload" /></svg>
+              <span><strong>Elige un archivo</strong> o arrástralo aquí</span>
+              <span class="drop-types">.docx, .pdf, .txt o foto (.jpg, .png)</span>
+            </span>
+            <span class="drop-filled"></span>
+          </label>
+        </section>
       </div>
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Apellido</th>
-            <th>Nombre completo</th>
-            <th>Nota</th>
-            <th>Justificación</th>
-            <th>Archivo</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
+
+      <section class="step step-wide" aria-labelledby="step3">
+        <div class="step-head">
+          <div>
+            <h2 id="step3" class="step-title"><span class="step-num">3</span>Tareas de los estudiantes</h2>
+            <p class="step-hint">Una entrega por archivo. El nombre del estudiante se toma del documento o, si no aparece, del nombre del archivo.</p>
+          </div>
+          <button type="button" id="clearStudents" class="link-btn" hidden>Quitar todas</button>
+        </div>
+        <label class="drop multi" data-slot="students">
+          <input type="file" accept=".txt,.docx,.pdf,.jpg,.jpeg,.png" multiple class="sr-only" />
+          <span class="drop-empty">
+            <svg class="drop-icon"><use href="#i-upload" /></svg>
+            <span><strong>Elige los archivos</strong> o arrástralos aquí</span>
+            <span class="drop-types">Puedes seleccionar varios a la vez: .docx, .pdf, .txt o fotos (.jpg, .png)</span>
+          </span>
+        </label>
+        <ul id="studentList" class="file-list" aria-live="polite"></ul>
+        <p id="ocrNote" class="ocr-note" hidden></p>
+      </section>
+
+      <p id="formMessage" class="form-message" role="alert" hidden></p>
+
+      <div class="actions">
+        <button type="submit" id="processBtn" class="btn btn-primary">Calificar tareas</button>
+        <p id="actionHint" class="action-hint">Falta la rúbrica y al menos una tarea.</p>
+      </div>
+    </form>
+
+    <section id="progress" class="progress" hidden aria-live="polite">
+      <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="progressTitle">
+        <span id="progressFill"></span>
+      </div>
+      <div class="progress-text">
+        <strong id="progressTitle">Preparando…</strong>
+        <span id="progressDetail"></span>
+        <span class="progress-note">Si recargas la página, el avance se recupera.</span>
+      </div>
+      <span id="progressClock" class="progress-clock">0:00</span>
     </section>
-  </div>
+
+    <section id="results" class="results" hidden aria-labelledby="resultsTitle">
+      <div class="results-head">
+        <div>
+          <h2 id="resultsTitle">Resultados</h2>
+          <p id="resultsSummary" class="results-summary"></p>
+        </div>
+        <div class="results-actions">
+          <button type="button" id="newBatchBtn" class="btn btn-quiet">
+            <svg class="btn-icon"><use href="#i-refresh" /></svg>Calificar otro grupo
+          </button>
+          <a id="downloadLink" class="btn btn-primary" href="#" download>
+            <svg class="btn-icon"><use href="#i-download" /></svg>Descargar Excel
+          </a>
+        </div>
+      </div>
+
+      <div id="banner" class="banner" hidden></div>
+
+      <div class="overview">
+        <dl class="figures">
+          <div><dt>Calificadas</dt><dd id="figGraded">—</dd></div>
+          <div><dt>Promedio</dt><dd id="figAverage" class="grade-font">—</dd></div>
+          <div><dt>Para revisar</dt><dd id="figReview">—</dd></div>
+        </dl>
+        <figure class="histogram" aria-labelledby="histCaption">
+          <div id="histBars" class="hist-bars"></div>
+          <figcaption id="histCaption">Distribución de notas</figcaption>
+        </figure>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters" role="tablist" aria-label="Filtrar resultados">
+          <button type="button" role="tab" class="filter" data-filter="todas" aria-selected="true">Todas <span></span></button>
+          <button type="button" role="tab" class="filter" data-filter="revisar" aria-selected="false">Para revisar <span></span></button>
+          <button type="button" role="tab" class="filter" data-filter="sinnota" aria-selected="false">Sin nota <span></span></button>
+        </div>
+        <label class="search">
+          <svg class="search-icon" aria-hidden="true"><use href="#i-search" /></svg>
+          <span class="sr-only">Buscar estudiante</span>
+          <input id="searchInput" type="search" placeholder="Buscar estudiante o archivo" autocomplete="off" />
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table class="grades">
+          <thead>
+            <tr>
+              <th scope="col" class="col-student"><button type="button" class="sort" data-sort="apellido">Estudiante</button></th>
+              <th scope="col" class="col-grade"><button type="button" class="sort" data-sort="nota">Nota</button></th>
+              <th scope="col" class="col-why">Justificación</th>
+              <th scope="col" class="col-review">Revisar</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+        <p id="emptyFilter" class="empty-filter" hidden>Ningún resultado coincide con el filtro.</p>
+      </div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>

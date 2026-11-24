@@ -1,0 +1,15 @@
+[project]
+name = "validador-de-tareas"
+version = "0.1.0"
+description = "Califica tareas de estudiantes con una rúbrica usando modelos locales en Ollama y genera un Excel."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.0.3",
+    "requests>=2.32.3",
+    "python-docx>=1.1.2",
+    "pypdf>=4.3.1",
+    "openpyxl>=3.1.5",
+    "pypdfium2>=4.30",
+    "pillow>=10.0",
+]

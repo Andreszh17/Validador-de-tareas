@@ -17,15 +17,28 @@ genera un único Excel con las notas ordenadas alfabéticamente por apellido.
   escaneados y las fotos; pesa 6.2 GB y está pensado para una GPU de 12 GB
   (por ejemplo una RTX 4070 Ti). Sin él la app funciona igual, pero los
   escaneos quedan marcados sin calificar.
-- Python 3.9+ instalado (verifica con `python --version`).
+- [uv](https://docs.astral.sh/uv/) instalado. No necesitas instalar Python
+  aparte: uv descarga la versión del proyecto (3.12, fijada en `.python-version`).
+  En Windows, desde PowerShell:
+  ```
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+  Cierra y vuelve a abrir la terminal, y verifica con `uv --version`.
 
 ## Instalación
 
 Desde la carpeta `validador-tareas`:
 
 ```
-pip install -r requirements.txt
+uv sync
 ```
+
+Esto crea el entorno virtual `.venv` dentro del proyecto, instala las
+dependencias de `pyproject.toml` y genera `uv.lock` con las versiones exactas.
+Sube `uv.lock` y `.python-version` a git para que otra persona obtenga el mismo
+entorno con `uv sync`; `.venv` no se sube (ya está en `.gitignore`).
+
+Para agregar una librería más adelante: `uv add nombre-de-la-libreria`.
 
 ## Ejecución
 
@@ -33,7 +46,7 @@ pip install -r requirements.txt
    Ollama; si no, ejecuta `ollama serve` en otra terminal).
 2. Levanta el backend:
    ```
-   python app.py
+   uv run app.py
    ```
 3. Abre en el navegador: http://localhost:5000
 
@@ -104,7 +117,7 @@ Para saber qué forma de calificar se parece más a tu criterio:
    `outputs/`.
 3. Compara:
    ```
-   python medir_contra_docente.py mis_notas.csv outputs/calificaciones_A.xlsx outputs/calificaciones_C.xlsx
+   uv run medir_contra_docente.py mis_notas.csv outputs/calificaciones_A.xlsx outputs/calificaciones_C.xlsx
    ```
 
 El informe da, por corrida, el error promedio frente a tus notas, el porcentaje de

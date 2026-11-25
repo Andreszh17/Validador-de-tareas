@@ -612,7 +612,8 @@ function criteriaHtml(r) {
     .map((c) => {
       const score = typeof c.puntaje === "number" ? formatPoints(c.puntaje) : "—";
       const low = typeof c.puntaje === "number" && c.puntaje < c.puntos_max * 0.6;
-      return `<li title="${escapeHtml(c.razon || "")}"><span class="crit-name">${escapeHtml(c.nombre)}</span><span class="crit-score${low ? " low" : ""}">${score}/${formatPoints(c.puntos_max)}</span></li>`;
+      const errs = Array.isArray(c.errores) && c.errores.length ? `\nErrores: ${c.errores.join("; ")}` : "";
+      return `<li title="${escapeHtml((c.razon || "") + errs)}"><span class="crit-name">${escapeHtml(c.nombre)}</span><span class="crit-score${low ? " low" : ""}">${score}/${formatPoints(c.puntos_max)}</span></li>`;
     })
     .join("");
   return `<ul class="crit-list">${items}</ul>`;
